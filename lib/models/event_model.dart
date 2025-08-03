@@ -1,4 +1,4 @@
-// lib/models/event_model.dart
+// models/event_model.dart
 
 class EventModel {
   final int id;
@@ -13,7 +13,7 @@ class EventModel {
   final int currentParticipants;
   final String category;
   final int? creatorId;
-  final String? icon; // REVISI: Menambahkan properti 'icon' yang hilang
+  final String? icon; 
   final String? color;
 
   EventModel({
@@ -29,7 +29,7 @@ class EventModel {
     required this.currentParticipants,
     required this.category,
     this.creatorId,
-    this.icon, // REVISI: Memastikan 'icon' ada di constructor
+    this.icon,
     this.color,
   });
 
