@@ -16,23 +16,19 @@ class _LoginScreenState extends State<LoginScreen> {
   final _studentNumberController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isPasswordObscured = true;
 
   void _login() async {
-    // Hide keyboard
     FocusScope.of(context).unfocus();
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     bool success = await Provider.of<AuthProvider>(context, listen: false)
         .login(_studentNumberController.text, _passwordController.text);
 
     if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
 
     if (success) {
       Navigator.of(context).pushReplacement(
@@ -46,6 +42,13 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _studentNumberController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -90,8 +93,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-
-                // Form Fields in a Card
                 Card(
                   elevation: 8.0,
                   shape: RoundedRectangleBorder(
@@ -115,12 +116,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _passwordController,
-                          obscureText: true,
+                          obscureText: _isPasswordObscured,
                           decoration: InputDecoration(
                             labelText: 'Password',
                             prefixIcon: const Icon(Icons.lock_outline),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isPasswordObscured
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordObscured = !_isPasswordObscured;
+                                });
+                              },
                             ),
                           ),
                         ),
@@ -128,12 +141,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
-                // Tombol Login
                 _isLoading
-                    ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+                    ? const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                )
                     : SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -156,10 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Link ke Daftar
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

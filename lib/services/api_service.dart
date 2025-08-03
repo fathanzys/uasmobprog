@@ -1,6 +1,5 @@
-// lib/services/api_service.dart
-
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/event_model.dart';
 
@@ -14,7 +13,8 @@ class ApiService {
       body: jsonEncode({'student_number': studentNumber, 'password': password}),
     );
     if (response.statusCode == 200) return jsonDecode(response.body);
-    throw Exception('Failed to login. Status: ${response.statusCode}, Body: ${response.body}');
+    debugPrint('Login failed with status ${response.statusCode} and body ${response.body}');
+    throw Exception('Failed to login.');
   }
 
   Future<Map<String, dynamic>> register({
@@ -29,54 +29,49 @@ class ApiService {
       Uri.parse('$_baseUrl/register'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
       body: jsonEncode({
-        'name': name,
-        'email': email,
-        'student_number': studentNumber,
-        'major': major,
-        'class_year': classYear,
-        'password': password,
+        'name': name, 'email': email, 'student_number': studentNumber,
+        'major': major, 'class_year': classYear, 'password': password,
         'password_confirmation': password,
       }),
     );
-    if (response.statusCode == 201) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to register. Status: ${response.statusCode}, Body: ${response.body}');
-    }
+    if (response.statusCode == 201) return jsonDecode(response.body);
+    throw Exception('Failed to register. Status: ${response.statusCode}, Body: ${response.body}');
   }
 
-  Future<List<EventModel>> getEvents() async {
+  Future<List<EventModel>> getEvents(String token) async {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final url = Uri.parse('$_baseUrl/events?cache_buster=$timestamp');
 
-    final response = await http.get(url);
+    final response = await http.get(
+      url,
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
-      if (decoded['data'] is Map && decoded['data']['events'] is List) {
+
+      if (decoded['data'] is List) {
+        final data = decoded['data'] as List;
+        return data.map((item) => EventModel.fromJson(item)).toList();
+      } else if (decoded['data'] is Map && decoded['data']['events'] is List) {
         final data = decoded['data']['events'] as List;
         return data.map((item) => EventModel.fromJson(item)).toList();
       } else {
-        throw Exception('Invalid data format for events.');
+        throw Exception('Invalid data format from events API.');
       }
+    } else {
+      throw Exception('Failed to load events. Status: ${response.statusCode}, Body: ${response.body}');
     }
-    throw Exception('Failed to load events');
   }
 
-  // REVISI: Menambahkan kembali parameter 'icon'
   Future<void> createEvent({
-    required String title,
-    required String description,
-    required String startDate,
-    required String endDate,
-    required String time,
-    required String location,
-    required int maxAttendees,
-    required num price,
-    required String category,
-    required String token,
-    required String icon, // <-- Parameter ditambahkan kembali
-    required String color,
+    required String title, required String description, required String startDate,
+    required String endDate, required String time, required String location,
+    required int maxAttendees, required num price, required String category,
+    required String token, required String icon, required String color,
   }) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/events'),
@@ -86,17 +81,10 @@ class ApiService {
         'Accept': 'application/json',
       },
       body: jsonEncode({
-        'title': title,
-        'description': description,
-        'start_date': startDate,
-        'end_date': endDate,
-        'time': time,
-        'location': location,
-        'max_attendees': maxAttendees,
-        'price': price,
-        'category': category,
-        'icon': icon, // <-- Mengirimkan icon ke server
-        'color': color,
+        'title': title, 'description': description, 'start_date': startDate,
+        'end_date': endDate, 'time': time, 'location': location,
+        'max_attendees': maxAttendees, 'price': price, 'category': category,
+        'icon': icon, 'color': color,
       }),
     );
     if (response.statusCode != 201) {
@@ -105,12 +93,10 @@ class ApiService {
   }
 
   Future<void> updateEvent(int eventId, Map<String, dynamic> eventData, String token) async {
-    // REVISI: Tidak lagi menghapus 'icon'
     final response = await http.put(
       Uri.parse('$_baseUrl/events/$eventId'),
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json', 'Authorization': 'Bearer $token',
         'Accept': 'application/json',
       },
       body: jsonEncode(eventData),

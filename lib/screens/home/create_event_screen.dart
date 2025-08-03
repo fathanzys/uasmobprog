@@ -27,21 +27,29 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   bool _isLoading = false;
 
   final Map<String, IconData> _iconOptions = {
-    'event': Icons.event,
-    'computer': Icons.computer,
-    'build': Icons.build,
-    'groups': Icons.groups,
-    'people': Icons.people,
-    'emoji_events': Icons.emoji_events,
-    'school': Icons.school,
-    'book': Icons.book,
-    'mosque': Icons.mosque,
+    'event': Icons.event, 'computer': Icons.computer, 'build': Icons.build,
+    'groups': Icons.groups, 'people': Icons.people, 'emoji_events': Icons.emoji_events,
+    'school': Icons.school, 'book': Icons.book, 'mosque': Icons.mosque,
   };
 
   final List<Color> _colorOptions = [
     Colors.indigo, Colors.blue, Colors.teal, Colors.green,
     Colors.amber, Colors.orange, Colors.red, Colors.purple, Colors.pink,
   ];
+
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2024),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) {
+      setState(() {
+        controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
+    }
+  }
 
   void _submitEvent() async {
     if (!_formKey.currentState!.validate()) return;
@@ -82,14 +90,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _startDateController.dispose();
-    _endDateController.dispose();
-    _timeController.dispose();
-    _locationController.dispose();
-    _maxAttendeesController.dispose();
-    _priceController.dispose();
+    _titleController.dispose(); _descriptionController.dispose();
+    _startDateController.dispose(); _endDateController.dispose();
+    _timeController.dispose(); _locationController.dispose();
+    _maxAttendeesController.dispose(); _priceController.dispose();
     _categoryController.dispose();
     super.dispose();
   }
@@ -99,9 +103,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Buat Event Baru'),
-        backgroundColor: Colors.indigo,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
-        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -113,36 +116,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               _buildSectionTitle('Detail Utama'),
               _buildTextField(controller: _titleController, label: 'Judul Event', icon: Icons.title),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Deskripsi',
-                  alignLabelWithHint: true,
-                  prefixIcon: Icon(Icons.description),
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 5,
-                keyboardType: TextInputType.multiline,
-                validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
-              ),
+              _buildTextField(controller: _descriptionController, label: 'Deskripsi', icon: Icons.description, maxLines: 5),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: _selectedIcon,
-                decoration: const InputDecoration(
-                  labelText: 'Ikon Event',
-                  prefixIcon: Icon(Icons.emoji_emotions),
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(labelText: 'Ikon Event', prefixIcon: Icon(Icons.emoji_emotions)),
                 items: _iconOptions.entries.map((entry) {
                   return DropdownMenuItem<String>(
                     value: entry.key,
-                    child: Row(
-                      children: [
-                        Icon(entry.value, color: Colors.indigo),
-                        const SizedBox(width: 10),
-                        Text(entry.key[0].toUpperCase() + entry.key.substring(1)),
-                      ],
-                    ),
+                    child: Row(children: [Icon(entry.value), const SizedBox(width: 10), Text(entry.key)]),
                   );
                 }).toList(),
                 onChanged: (value) => setState(() => _selectedIcon = value),
@@ -152,11 +134,21 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               const SizedBox(height: 24),
 
               _buildSectionTitle('Jadwal & Lokasi'),
-              _buildTextField(controller: _startDateController, label: 'Tanggal Mulai (YYYY-MM-DD)', icon: Icons.calendar_today),
+              InkWell(
+                onTap: () => _selectDate(context, _startDateController),
+                child: AbsorbPointer(
+                  child: _buildTextField(controller: _startDateController, label: 'Tanggal Mulai', icon: Icons.calendar_today),
+                ),
+              ),
               const SizedBox(height: 16),
-              _buildTextField(controller: _endDateController, label: 'Tanggal Selesai (Opsional)', icon: Icons.calendar_today_outlined, isRequired: false),
+              InkWell(
+                onTap: () => _selectDate(context, _endDateController),
+                child: AbsorbPointer(
+                  child: _buildTextField(controller: _endDateController, label: 'Tanggal Selesai (Opsional)', icon: Icons.calendar_today_outlined, isRequired: false),
+                ),
+              ),
               const SizedBox(height: 16),
-              _buildTextField(controller: _timeController, label: 'Waktu (HH:MM:SS)', icon: Icons.access_time, isRequired: false),
+              _buildTextField(controller: _timeController, label: 'Waktu (HH:MM)', icon: Icons.access_time, isRequired: false),
               const SizedBox(height: 16),
               _buildTextField(controller: _locationController, label: 'Lokasi', icon: Icons.location_on),
               const SizedBox(height: 24),
@@ -171,16 +163,17 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton.icon(
-                onPressed: _submitEvent,
-                icon: const Icon(Icons.add_task),
-                label: const Text('SUBMIT EVENT'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  : SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _submitEvent,
+                  icon: const Icon(Icons.add_task),
+                  label: const Text('SUBMIT EVENT'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
                 ),
               ),
             ],
@@ -190,7 +183,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
   }
 
-  Widget _buildColorPicker() {
+  Widget _buildColorPicker() { // ... (Tidak ada perubahan di sini)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -208,11 +201,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               return GestureDetector(
                 onTap: () => setState(() => _selectedColor = color),
                 child: Container(
-                  width: 50,
-                  height: 50,
+                  width: 50, height: 50,
                   decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
+                    color: color, shape: BoxShape.circle,
                     border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
                   ),
                   child: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
@@ -225,33 +216,26 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title) { // ... (Tidak ada perubahan di sini)
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Text(
         title,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo.shade800),
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
       ),
     );
   }
 
   Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    bool isRequired = true,
+    required TextEditingController controller, required String label,
+    required IconData icon, TextInputType keyboardType = TextInputType.text,
+    bool isRequired = true, int? maxLines = 1,
   }) {
     return TextFormField(
       controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.indigo.shade300),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-        filled: true,
-        fillColor: Colors.indigo.withOpacity(0.05),
-      ),
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
       keyboardType: keyboardType,
+      maxLines: maxLines,
       validator: isRequired ? (v) => v!.isEmpty ? 'Wajib diisi' : null : null,
     );
   }

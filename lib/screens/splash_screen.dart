@@ -34,16 +34,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     if (!mounted) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final navigator = Navigator.of(context);
     final bool isLoggedIn = await authProvider.tryAutoLogin();
 
     if (!mounted) return;
 
     if (isLoggedIn) {
-      Navigator.of(context).pushReplacement(
+      navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } else {
-      Navigator.of(context).pushReplacement(
+      navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     }
