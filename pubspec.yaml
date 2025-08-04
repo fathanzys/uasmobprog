@@ -36,5 +36,5 @@ flutter:
 
   # PERBAIKAN: Beginilah cara mendaftarkan folder assets dengan benar.
   # Pastikan indentasi 'assets:' sejajar dengan 'uses-material-design'.
-  assets:
-    - assets/images/
+#  assets:
+#    - assets/images/

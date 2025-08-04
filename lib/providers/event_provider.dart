@@ -1,5 +1,6 @@
+// lib/providers/event_provider.dart
+
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/event_model.dart';
 
@@ -13,21 +14,19 @@ class EventProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
 
+  // REVISI: Fungsi ini sekarang wajib menerima token
   Future<void> fetchEvents(String token) async {
     _isLoading = true;
     _errorMessage = '';
     notifyListeners();
-
     try {
-      final fetchedEvents = await _apiService.getEvents(token);
-      _events = fetchedEvents;
+      _events = await _apiService.getEvents(token);
     } catch (e) {
-      _errorMessage = '[Fetch Events Error]: ${e.toString()}';
-      debugPrint(_errorMessage);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      _errorMessage = e.toString();
+      debugPrint('[Fetch Events Error] $e');
     }
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<bool> createNewEvent({
@@ -46,23 +45,17 @@ class EventProvider with ChangeNotifier {
   }) async {
     try {
       await _apiService.createEvent(
-        title: title,
-        description: description,
-        startDate: startDate,
-        endDate: endDate,
-        time: time,
-        location: location,
-        maxAttendees: maxAttendees,
-        price: price,
-        category: category,
-        token: token,
-        icon: icon,
-        color: color,
+        title: title, description: description, startDate: startDate,
+        endDate: endDate, time: time, location: location,
+        maxAttendees: maxAttendees, price: price, category: category,
+        token: token, icon: icon, color: color,
       );
-      await fetchEvents(token); // Refresh setelah create
+      // REVISI: Kirimkan token saat refresh data
+      await fetchEvents(token);
       return true;
     } catch (e) {
-      _errorMessage = '[Create Event Error]: ${e.toString()}';
+      _errorMessage = e.toString();
+      debugPrint('[Create Event Error] $e');
       return false;
     }
   }
@@ -70,10 +63,12 @@ class EventProvider with ChangeNotifier {
   Future<bool> updateExistingEvent(int eventId, Map<String, dynamic> eventData, String token) async {
     try {
       await _apiService.updateEvent(eventId, eventData, token);
-      await fetchEvents(token); // Refresh setelah update
+      // REVISI: Kirimkan token saat refresh data
+      await fetchEvents(token);
       return true;
     } catch (e) {
-      _errorMessage = '[Update Event Error]: ${e.toString()}';
+      _errorMessage = e.toString();
+      debugPrint('[Update Event Error] $e');
       return false;
     }
   }
@@ -81,11 +76,12 @@ class EventProvider with ChangeNotifier {
   Future<bool> deleteExistingEvent(int eventId, String token) async {
     try {
       await _apiService.deleteEvent(eventId, token);
-      _events.removeWhere((event) => event.id == eventId); // Local delete
+      _events.removeWhere((event) => event.id == eventId);
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = '[Delete Event Error]: ${e.toString()}';
+      _errorMessage = e.toString();
+      debugPrint('[Delete Event Error] $e');
       return false;
     }
   }

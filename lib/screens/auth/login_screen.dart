@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordObscured = true;
 
   void _login() async {
+    // Sembunyikan keyboard saat tombol ditekan
     FocusScope.of(context).unfocus();
 
     setState(() => _isLoading = true);
@@ -93,6 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
+
+                // REVISI: Menggunakan Card sebagai container utama form
                 Card(
                   elevation: 8.0,
                   shape: RoundedRectangleBorder(
@@ -104,12 +107,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         TextFormField(
                           controller: _studentNumberController,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Nomor Mahasiswa',
-                            prefixIcon: const Icon(Icons.person_outline),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            prefixIcon: Icon(Icons.person_outline),
                           ),
                           keyboardType: TextInputType.number,
                         ),
@@ -120,14 +120,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             labelText: 'Password',
                             prefixIcon: const Icon(Icons.lock_outline),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isPasswordObscured
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: Colors.grey, // Memberi warna pada ikon
                               ),
                               onPressed: () {
                                 setState(() {
@@ -141,34 +139,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 30),
+
                 _isLoading
-                    ? const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                )
+                    ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
                     : SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.indigo,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 5,
-                    ),
-                    child: Text(
-                      'LOGIN',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: const Text('LOGIN'),
                   ),
                 ),
+
                 const SizedBox(height: 20),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

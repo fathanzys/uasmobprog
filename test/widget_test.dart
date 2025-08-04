@@ -7,6 +7,7 @@ import 'package:uas/providers/event_provider.dart';
 
 void main() {
   testWidgets('Login screen shows correctly after splash screen', (WidgetTester tester) async {
+    // Bangun aplikasi kita, lengkap dengan semua provider yang dibutuhkan.
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -17,11 +18,16 @@ void main() {
       ),
     );
 
+    // Tunggu hingga semua frame dan animasi (seperti splash screen) selesai.
     await tester.pumpAndSettle(const Duration(seconds: 4));
 
+    // Verifikasi bahwa widget-widget penting di halaman login sudah muncul.
     expect(find.text('Selamat Datang di HackVerse'), findsOneWidget);
-    expect(find.widgetWithText(TextField, 'NIM'), findsOneWidget);
-    expect(find.widgetWithText(TextField, 'Password'), findsOneWidget);
+
+    // REVISI: Menggunakan label teks yang benar sesuai dengan UI.
+    expect(find.widgetWithText(TextFormField, 'Nomor Mahasiswa'), findsOneWidget);
+
+    expect(find.widgetWithText(TextFormField, 'Password'), findsOneWidget);
     expect(find.widgetWithText(ElevatedButton, 'LOGIN'), findsOneWidget);
   });
 }
